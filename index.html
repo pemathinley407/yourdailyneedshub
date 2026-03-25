@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yourdailyneedshub</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #f4f6f9;
+}
+
+/* HEADER */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.logo img { height: 45px; }
+
+nav a {
+    margin: 0 10px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+}
+
+/* HERO */
+.hero {
+    background: linear-gradient(to right,#00b894,#fd7e14);
+    color: white;
+    text-align: center;
+    padding: 60px 20px;
+}
+
+/* FILTER */
+.filter {
+    text-align: center;
+    padding: 20px;
+}
+
+.filter button {
+    margin: 5px;
+    padding: 8px 15px;
+    border: none;
+    background: #ddd;
+    cursor: pointer;
+}
+
+/* PRODUCTS */
+.products {
+    padding: 30px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+    gap: 20px;
+}
+
+.card {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.card img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+.btn {
+    margin-top: 8px;
+    padding: 8px;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+}
+
+.add { background: #00b894; color:white; }
+.buy { background: #fd7e14; color:white; }
+
+/* CART */
+.cart {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 260px;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.cart ul {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+/* CHECKOUT */
+.checkout {
+    display: none;
+    position: fixed;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+}
+
+.checkout input {
+    width: 100%;
+    margin: 5px 0;
+    padding: 8px;
+}
+
+footer {
+    background: #222;
+    color: white;
+    text-align: center;
+    padding: 15px;
+}
+</style>
+
+</head>
+
+<body>
+
+<header>
+    <div class="logo">
+        <!-- MAKE SURE logo.png IS IN SAME FOLDER -->
+        <img src="logo.png">
+    </div>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#products">Products</a>
+    </nav>
+</header>
+
+<section class="hero">
+    <h1>Yourdailyneedshub</h1>
+    <p>Everything you need, every day</p>
+</section>
+
+<!-- FILTER -->
+<div class="filter">
+    <button onclick="filterProducts('all')">All</button>
+    <button onclick="filterProducts('tools')">Tools</button>
+    <button onclick="filterProducts('clothing')">Clothing</button>
+    <button onclick="filterProducts('fitness')">Fitness</button>
+</div>
+
+<!-- PRODUCTS -->
+<section class="products" id="products">
+<div class="grid" id="productGrid"></div>
+</section>
+
+<!-- CART -->
+<div class="cart">
+    <h3>Cart</h3>
+    <ul id="cart-list"></ul>
+    <p>Total: $<span id="total">0</span></p>
+    <button class="btn buy" onclick="openCheckout()">Checkout</button>
+</div>
+
+<!-- CHECKOUT -->
+<div class="checkout" id="checkoutBox">
+    <h3>Checkout</h3>
+
+    <input id="name" placeholder="Full Name">
+    <input id="email" placeholder="Email">
+    <input id="address" placeholder="Address">
+
+    <p><strong>Total: $<span id="checkoutTotal">0</span></strong></p>
+
+    <h4>Pay via Wise</h4>
+    <p>Send payment to:</p>
+    <p><b>Name:</b> Pema Thinley</p>
+    <p><b>Email:</b> yourwise@email.com</p>
+
+    <input type="file" id="proof">
+
+    <button class="btn add" onclick="placeOrder()">Confirm Payment</button>
+</div>
+
+<footer>
+    <p>© 2026 Yourdailyneedshub</p>
+</footer>
+
+<script>
+let products = [
+    {name:"Tool Kit", price:10, category:"tools"},
+    {name:"T-Shirt", price:8, category:"clothing"},
+    {name:"Dumbbell", price:15, category:"fitness"},
+    {name:"Pan", price:12, category:"tools"}
+];
+
+let cart = [];
+let total = 0;
+
+function displayProducts(list) {
+    let grid = document.getElementById("productGrid");
+    grid.innerHTML = "";
+
+    list.forEach(p => {
+        grid.innerHTML += `
+        <div class="card">
+            <img src="https://via.placeholder.com/200">
+            <h3>${p.name}</h3>
+            <p>$${p.price}</p>
+            <button class="btn add" onclick="addToCart('${p.name}',${p.price})">Add</button>
+        </div>`;
+    });
+}
+
+function filterProducts(category) {
+    if(category === "all") displayProducts(products);
+    else displayProducts(products.filter(p => p.category === category));
+}
+
+function addToCart(name, price) {
+    cart.push(name);
+    total += price;
+
+    let list = document.getElementById("cart-list");
+    let item = document.createElement("li");
+    item.innerText = name + " - $" + price;
+    list.appendChild(item);
+
+    document.getElementById("total").innerText = total;
+}
+
+function openCheckout() {
+    document.getElementById("checkoutBox").style.display = "block";
+    document.getElementById("checkoutTotal").innerText = total;
+}
+
+function placeOrder() {
+    let name = document.getElementById("name").value;
+    let email = document.getElementById("email").value;
+
+    if(name === "" || email === "") {
+        alert("Please fill all details");
+        return;
+    }
+
+    alert("Order placed! Please complete payment via Wise.");
+    location.reload();
+}
+
+displayProducts(products);
+</script>
+
+</body>
+</html>
